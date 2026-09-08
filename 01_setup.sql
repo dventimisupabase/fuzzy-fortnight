@@ -94,6 +94,7 @@ select
       'ts', (now() - (random() * interval '30 days'))::text,
       'item_id', 1 + floor(random()*200)::int,
       'session', md5(random()::text),
+      'trace', md5(random()::text || 'trace'),
       'client', jsonb_build_object(
         'ua', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         'viewport', jsonb_build_object(
@@ -132,7 +133,8 @@ select
   round(60 + random()*40
         + jsonb_array_length(c.events) * (1.0 + random()*0.4))::int,
   now() - (random() * interval '7 days')
-from app.carts c, generate_series(1, 3);
+from app.carts c,
+     generate_series(1, case when c.user_id % 25 = 0 then 5 else 3 end);
 
 -- Background noise: other endpoints, all healthy.
 insert into app.request_logs (user_id, path, status_code, duration_ms, created_at)

@@ -38,12 +38,20 @@ alter table app.carts drop column events;
 
 commit;
 
+-- DROP COLUMN is metadata-only: existing heap tuples keep their old
+-- physical bytes until rewritten, so pg_column_size(c.*) on old rows
+-- still reflects the pre-drop size until a rewrite happens. VACUUM
+-- cannot run inside a transaction block, so this is a separate
+-- statement after the commit above.
+vacuum full app.carts;
+
 -- ------------------------------------------------------------
 -- On-branch verification queries (the "prod untouched" beat):
 -- ------------------------------------------------------------
 -- 1) Events preserved:
 --    select count(*) from app.cart_events;            -- ~1M
--- 2) Cart rows are now tiny:
+-- 2) Cart rows are now tiny (run AFTER the vacuum full above --
+--    without it this still shows the old bloated size):
 --    select pg_size_pretty(avg(pg_column_size(c.*))::bigint)
 --    from app.carts c;
 -- 3) The checkout access pattern is indexed:
