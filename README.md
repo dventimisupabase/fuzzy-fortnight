@@ -9,13 +9,13 @@ fix applied and verified on a Supabase branch, prod untouched.
 
 ## Files
 
-| File | What it is |
-|---|---|
-| `01_setup.sql` | Schema + seed data with the planted pathology (jsonb accumulator on `app.carts.events`). Run once on a fresh demo project. |
-| `02_pm_agent_role.sql` | Optional read-only `pm_agent` role — the safety proof point. Change the password. |
-| `03_fix_migration.sql` | Known-good reference for the stretch fix. Run only on a branch. |
-| `talk_track.md` | Minute-by-minute script with beats and the hard-cut line. |
-| `demo_prompts.md` | The 5 exact prompts, expected outputs, 3-tier fallback plan, rehearsal checklist. |
+| File                   | What it is                                                                                                                 |
+|------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `01_setup.sql`         | Schema + seed data with the planted pathology (jsonb accumulator on `app.carts.events`). Run once on a fresh demo project. |
+| `02_pm_agent_role.sql` | Optional read-only `pm_agent` role — the safety proof point. Change the password.                                          |
+| `03_fix_migration.sql` | Known-good reference for the stretch fix. Run only on a branch.                                                            |
+| `talk_track.md`        | Minute-by-minute script with beats and the hard-cut line.                                                                  |
+| `demo_prompts.md`      | The 5 exact prompts, expected outputs, 3-tier fallback plan, rehearsal checklist.                                          |
 
 ## The plant (so you can speak to it fluently)
 

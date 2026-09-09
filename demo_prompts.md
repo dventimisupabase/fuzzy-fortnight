@@ -50,7 +50,7 @@ linking payload size to checkout latency.
 > Write this up as an engineering-ready issue: symptom, blast radius,
 > root cause, the evidence queries you ran, proposed fix (normalize
 > events into a separate table), and suggested priority. Then file it
-> in Linear in [TEAM NAME].
+> in Linear in Sandbox.
 
 **Expected:** structured issue with real numbers from prompts 1–3, filed
 via Linear MCP. Have the Linear team name memorized.
@@ -58,19 +58,23 @@ via Linear MCP. Have the Linear team name memorized.
 **Success criterion:** the issue lands in Linear and you open it on
 screen. **This is the demo's money shot — rehearse this step twice.**
 
-## Prompt 5 — Stretch (branch fix)
+## Prompt 5 — Stretch (branch fix) — CUT FOR THIS EVENT
 
-> Create a Supabase branch and apply the fix there: a normalized
+**Decided by David at rehearsal on 2026-09-09: not running tonight.**
+Even against a pre-created branch, Supabase branch creation/access has
+high average latency, high variance, and can fail outright from prior
+experience — too flaky for a live 8-minute demo, stretch slot or not.
+The demo ends after Prompt 4. Kept below for reference in case a future
+event revisits the stretch; the `checkout-fix` branch itself is left
+alone (not deleted) but is not part of tonight's run of show.
+
+> Apply the fix on the existing `checkout-fix` branch: a normalized
 > cart_events table, backfill from the accumulator, drop the jsonb
 > column. Then verify: event count preserved, cart row sizes, and that
 > fetching a cart's recent events uses an index.
 
-**Expected:** branch created, migration applied (reference version:
-`03_fix_migration.sql`), verification queries shown.
-
-**Timing risk:** branch creation can take a couple of minutes. Mitigation:
-**pre-create the branch during setup** and change the prompt to "apply
-the fix on the `checkout-fix` branch." Decide at rehearsal, not live.
+**Expected:** migration applied on the pre-created branch (reference
+version: `03_fix_migration.sql`), verification queries shown.
 
 ---
 
