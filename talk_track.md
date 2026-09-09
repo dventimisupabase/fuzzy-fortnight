@@ -33,9 +33,8 @@ On screen: Claude with Supabase MCP connected to "Cartwheel."
 Do NOT tour the schema. The agent will discover it — that's the point.
 
 **Technical note (your own reference / Q&A fuel, not spoken verbatim):**
-The MCP connection itself is configured with layered access control, on
-top of the `pm_agent` read-only Postgres role: it connects to
-`https://mcp.supabase.com/mcp` with three URL query params —
+The MCP connection itself is configured with layered access control. It
+connects to `https://mcp.supabase.com/mcp` with three URL query params —
 `project_ref=<ref>` scopes it to only this one Supabase project (and,
 per Supabase's own docs, auto-disables account/org-management tools —
 no visibility into any other project in the org); `read_only=true`
@@ -46,6 +45,9 @@ functions, storage, debugging, development) entirely — the live demo
 never creates or touches a branch. `features` takes any comma-separated
 list of those groups if you ever need more than one. Full example:
 `https://mcp.supabase.com/mcp?project_ref=gbdrmmptjvxlmxmcblqe&read_only=true&features=database`.
+Confirmed live via `select current_user`: the connection authenticates
+as Supabase's own built-in `supabase_read_only_user`, with
+`default_transaction_read_only = on`.
 
 ## 1:30–5:15 — The investigation (3 prompts)
 

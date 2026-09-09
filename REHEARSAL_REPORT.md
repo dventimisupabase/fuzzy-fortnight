@@ -43,6 +43,55 @@ Full connection details and the `pm_agent` password are in
 - Migration on branch: **~51 seconds** (create table + backfill ~951K rows + drop column), plus a VACUUM FULL that ran fast (not separately timed — clearly not the bottleneck next to the multi-minute branch creation)
 - **Stretch go/no-go: CUT, decided by David on 2026-09-09.** My original measurement-based recommendation was GO-with-a-pre-created-branch (3-4+ min branch creation is infeasible live, but a pre-created branch plus ~55-60s to apply+verify the fix would have fit in a slightly extended stretch window). David overrode this with firsthand experience that Supabase branching has high variance and p95, and can fail outright — a risk this session's small sample size (two clean creates) couldn't see. The demo now ends after Prompt 4. `checkout-fix` stays pre-created and untouched (not deleted), in case a future event revisits the stretch.
 
+## Blind dry run (David, 2026-09-09, separate session)
+
+David ran the frozen prompts himself in a genuinely memory-isolated
+Claude Code session: a different working directory (`~/Scratch`,
+contents cleared first), the broad `claude.ai Supabase` connector
+disabled for that project, only the scoped `supabase-demo` MCP +
+Linear MCP active, and no `--continue`/`--resume` — so no carryover
+from this conversation or any prior one. This is the actual test the
+rehearsal checklist's "golden transcript" step calls for.
+
+**Result: the full pipeline held up, with one real pacing finding.**
+
+- **Prompt 1 alone did Prompt 1 and Prompt 2's job in one turn.** Given
+  only the open-ended triage prompt, the agent reported the bimodal
+  split, the exact deterministic 200-user cohort, ruled out time-of-day/
+  region/plan explicitly, and correlated to cart-event count (avg 4,106
+  vs 27) — all of Prompt 2's expected content, unprompted. It also
+  speculated about root-cause mechanisms (recompute totals, replay
+  history, fraud scoring) but correctly flagged it couldn't confirm
+  which without seeing application code.
+- **David skipped Prompt 2 as redundant and ran Prompt 3 directly.** It
+  independently produced rule-outs that weren't scripted anywhere: it
+  checked whether a bloated cart's events were genuine distinct
+  interactions vs. a duplicate-logging bug (ruled out via distinct
+  `trace`/`session`/`ts` per element), and whether cart *age* explained
+  the split (ruled out — ~91 days both groups). It named the anti-pattern
+  as an "unbounded embedded log in a hot-path row" and sketched a fix
+  (separate `cart_events` table, checkout reads only current state)
+  that matches `03_fix_migration.sql` closely, without having seen that
+  file. It did not spontaneously surface a literal `pg_column_size`
+  byte figure on screen — built its case on event count instead. Not a
+  gap: that number is one of the three memorized ones for exactly this
+  reason, and a natural follow-up question would surface it live if
+  wanted, same pattern `demo_prompts.md` already sanctions for Prompt 1.
+- **Prompt 4 filed a real issue:** [SANDBOX-17](https://linear.app/supabase/issue/SANDBOX-17/checkout-p95p95-latency-spikes-to-37-84s-for-4percent-of-users),
+  "Checkout p95/p99 latency spikes to 3.7-8.4s for ~4% of users
+  (unbounded cart.events JSONB)," priority High, status Triage, landed
+  in the Sandbox team as designed. Includes symptom, blast radius, root
+  cause, the evidence queries, the fix proposal, and priority rationale.
+  Left live as of this writing (good golden-transcript screenshot
+  candidate); no hard-delete tool exists for Linear issues via MCP,
+  only marking it Canceled (archived, not erased) or deleting through
+  the Linear web app directly.
+
+**Implication for the live run:** decide live whether to run Prompt 2
+at all — it's very likely to just repeat what Prompt 1 already said.
+Prompt 3 is worth keeping regardless; it earned genuinely new evidence
+in this run. No prompt wording changed as a result of this finding.
+
 ## Changes made to package files (diff-level, with rationale)
 
 **`01_setup.sql`** — two changes, both because the first seed failed acceptance:
